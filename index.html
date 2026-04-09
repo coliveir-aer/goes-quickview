@@ -955,7 +955,7 @@
                     
                     <div style={blockStyle}>
                         <div style={headerStyle}>Colorbar</div>
-                        <select style={{width:'100%', padding:'4px 2px', borderRadius:'3px', cursor:'pointer'}} value={colorMap} onChange={e=>onSetColorMap(e.target.value)}>
+                        <select style={{width:'100%', padding:'4px 2px', borderRadius:'3px', cursor:'pointer', color: 'black'}} value={colorMap} onChange={e=>onSetColorMap(e.target.value)}>
                             {Object.keys(colorMaps).sort().map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
                         <button style={{width:'100%', padding:'5px', cursor:'pointer', fontWeight:'bold', borderRadius:'3px'}} onClick={onToggleColorbar}>{isColorbarVisible ? 'Hide Bar' : 'Show Bar'}</button>
@@ -1004,7 +1004,7 @@
                 <div style={{ position:'absolute', left:`${pos.x}px`, top:`${pos.y}px`, display:'flex', flexDirection:'column', alignItems:'center', background:'rgba(0,0,0,0.65)', padding:'5px', borderRadius:'5px', color:'white', zIndex:100, width:'130px', cursor:'move', userSelect:'none' }} onMouseDown={startDrag}>
                     <div style={{...blockStyle, marginTop: 0, borderTop: 'none'}}>
                         <div style={headerStyle}>Colorbar</div>
-                        <select style={{width:'100%', padding:'4px 2px', borderRadius:'3px', cursor:'pointer'}} value={colorMap} onChange={e=>onSetColorMap(e.target.value)}>
+                        <select style={{width:'100%', padding:'4px 2px', borderRadius:'3px', cursor:'pointer', color: 'black'}} value={colorMap} onChange={e=>onSetColorMap(e.target.value)}>
                             {Object.keys(colorMaps).sort().map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
                         <button style={{width:'100%', padding:'5px', cursor:'pointer', fontWeight:'bold', borderRadius:'3px', background:'#e9ecef', border:'1px solid #ced4da', color:'#495057'}} onClick={onToggleColorbar}>{isColorbarVisible ? 'Hide Bar' : 'Show Bar'}</button>
@@ -1242,17 +1242,17 @@
                     <div style={{ padding: '8px', background: '#343a40', color: 'white', display: 'flex', flexDirection: 'column', gap: '5px', borderTop: '1px solid #555' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '15px', fontSize: '11px', flexWrap: 'wrap' }}>
                             <label>X-Axis: 
-                                <select value={axisMap.x} onChange={e => handleAxisChange('x', e.target.value)} style={{marginLeft: '4px', padding: '1px'}}>
+                                <select value={axisMap.x} onChange={e => handleAxisChange('x', e.target.value)} style={{marginLeft: '4px', padding: '1px', color: 'black'}}>
                                     {dims.map((d, i) => <option key={i} value={i}>Dim {i} (len: {d})</option>)}
                                 </select>
                             </label>
                             <label>Y-Axis: 
-                                <select value={axisMap.y} onChange={e => handleAxisChange('y', e.target.value)} style={{marginLeft: '4px', padding: '1px'}}>
+                                <select value={axisMap.y} onChange={e => handleAxisChange('y', e.target.value)} style={{marginLeft: '4px', padding: '1px', color: 'black'}}>
                                     {dims.map((d, i) => <option key={i} value={i}>Dim {i} (len: {d})</option>)}
                                 </select>
                             </label>
                             <label>Slice (Z): 
-                                <select value={axisMap.z} onChange={e => handleAxisChange('z', e.target.value)} style={{marginLeft: '4px', padding: '1px'}}>
+                                <select value={axisMap.z} onChange={e => handleAxisChange('z', e.target.value)} style={{marginLeft: '4px', padding: '1px', color: 'black'}}>
                                     {dims.map((d, i) => <option key={i} value={i}>Dim {i} (len: {d})</option>)}
                                 </select>
                             </label>
