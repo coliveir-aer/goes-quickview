@@ -191,7 +191,8 @@
             });
 
             const keysFound = [];
-            const prefixes = [`ABI-L2-DMW${domainId}`, `ABI-L2-DMWV${domainId}`];
+            const prefixDomain = domainId.startsWith('M') ? 'M' : domainId;
+            const prefixes = [`ABI-L2-DMW${prefixDomain}`, `ABI-L2-DMWV${prefixDomain}`];
             
             // Fetch all hours in parallel to drastically speed up scan
             const fetchPromises = [];
@@ -228,6 +229,8 @@
                 
                 let pCode = "ABI-L2-DMW";
                 if (filename.includes("DMWV")) pCode = "ABI-L2-DMWV";
+                
+                if (domainId.startsWith('M') && !filename.includes(`${pCode}${domainId}-`)) return;
                 
                 let pChan = null;
                 if (filename.includes("C02_") || filename.includes("-C02_") || filename.includes("C02_")) pChan = "C02";
