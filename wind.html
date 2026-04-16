@@ -20,60 +20,37 @@
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             height: 100vh;
             margin: 0;
             padding: 0;
             overflow: hidden;
             background-color: #f1f5f9;
         }
-        #dashboard-pane {
-            flex: none;
-            height: 25%;
-            overflow-y: auto;
-            overflow-x: hidden;
-            position: relative;
-            z-index: 10;
-        }
-        #drag-divider {
-            height: 6px;
-            background-color: #cbd5e1;
-            cursor: row-resize;
-            z-index: 50;
-            transition: background-color 0.2s;
-        }
-        #drag-divider:hover, #drag-divider.dragging {
-            background-color: #94a3b8;
+        #sidebar {
+            width: 340px;
+            flex-shrink: 0;
+            height: 100vh;
+            background-color: #f8fafc;
+            border-right: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            z-index: 20;
         }
         #root {
-            flex: 1;
+            flex-grow: 1;
+            height: 100vh;
             overflow: hidden;
             position: relative;
             z-index: 1;
         }
 
-        /* --- Dashboard Specific Styles --- */
-        .status-grid { display: grid; grid-template-columns: 280px repeat(24, 1fr); min-width: 1500px; }
-        .product-row { display: contents; }
-        .status-cell { border: 1px solid #e2e8f0; background-color: #f8fafc; padding: 2px; display: flex; flex-wrap: wrap; gap: 1px; justify-content: flex-start; align-content: flex-start; min-height: 40px; }
-        .status-box { flex-grow: 1; min-width: 10px; height: 10px; border-radius: 1px; background-color: #cbd5e1; cursor: pointer; position: relative; }
-        .status-box:hover { transform: scale(1.2); z-index: 10; box-shadow: 0 0 4px rgba(0,0,0,0.2); }
-        .status-box.exists { background-color: #22c55e; }
-        .status-box.missing { background-color: #ef4444; }
-        .status-box.scanning { background-color: #eab308; animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-        .tooltip { visibility: hidden; background-color: #1e293b; color: #fff; text-align: center; border-radius: 6px; padding: 8px; position: absolute; z-index: 50; bottom: 125%; left: 50%; transform: translateX(-50%); width: 220px; font-size: 10px; word-break: break-all; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
-        .status-box:hover .tooltip { visibility: visible; opacity: 1; }
-        .header-row { display: contents; }
-        .header-cell { background-color: #334155; color: white; padding: 8px; text-align: center; font-size: 12px; font-weight: 600; border: 1px solid #1e293b; position: sticky; top: 0; z-index: 20; }
-        .product-label { background-color: #f1f5f9; padding: 8px; font-size: 11px; font-weight: 600; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; }
         .toast { position: fixed; bottom: 20px; right: 20px; background: #1e293b; color: white; padding: 12px 24px; border-radius: 8px; display: none; z-index: 100; }
 
         /* --- Sandbox Specific Styles --- */
         .main-layout { display: flex; height: 100%; }
-        .sidebar { width: 320px; min-width: 300px; padding: 1rem; background-color: #fff; border-right: 1px solid #ddd; overflow-y: auto; box-shadow: 2px 0 5px rgba(0,0,0,0.1); z-index: 20; }
-        .content-grid { flex-grow: 1; display: grid; grid-template-columns: 1fr; padding: 8px; background-color: #e9ecef; overflow: hidden; }
-        .view-container { display: flex; flex-direction: column; background-color: #495057; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); overflow: hidden; height: 100%; position: relative; }
+        .content-grid { flex-grow: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(600px, 1fr)); gap: 8px; padding: 8px; background-color: #e9ecef; overflow-y: auto; }
+        .view-container { display: flex; flex-direction: column; background-color: #495057; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); overflow: hidden; height: 100%; min-height: 400px; position: relative; }
         .view-header { background-color: #343a40; color: white; padding: 6px 12px; font-size: 0.9rem; font-weight: bold; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
         .view-canvas-wrapper { flex-grow: 1; position: relative; overflow: hidden; background: #111; cursor: grab; }
         .view-canvas-wrapper:active { cursor: grabbing; }
@@ -101,68 +78,48 @@
 </head>
 <body>
 
-    <!-- TOP PANE: DASHBOARD -->
-    <div id="dashboard-pane" class="p-6">
-        <div class="max-w-[1800px] mx-auto bg-white rounded-xl shadow-sm p-6 mb-8">
-            <header class="mb-6 border-b pb-6">
-                <h1 class="text-2xl font-bold mb-4 text-slate-800">GOES-R Derived Motion Winds (DMW) Dashboard</h1>
-                
-                <div class="flex flex-wrap gap-6 items-end">
-                    <div>
-                        <label class="block text-sm font-semibold mb-1 text-slate-700">Satellite</label>
-                        <select id="satelliteSelect" class="border border-slate-300 rounded p-2 bg-slate-50 text-sm">
-                            <option value="noaa-goes19">GOES-19 (East)</option>
-                            <option value="noaa-goes18">GOES-18 (West)</option>
-                            <option value="noaa-goes17">GOES-17</option>
-                            <option value="noaa-goes16">GOES-16</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold mb-1 text-slate-700">Target Date (UTC)</label>
-                        <input type="date" id="dateInput" class="border border-slate-300 rounded p-2 bg-slate-50 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold mb-1 text-slate-700">Click Action</label>
-                        <div class="flex border border-slate-300 rounded overflow-hidden text-xs">
-                            <label class="bg-slate-50 px-3 py-2 cursor-pointer border-r border-slate-300 hover:bg-slate-100 flex items-center">
-                                <input type="radio" name="clickAction" value="load" checked class="mr-2"> Load in Viewer
-                            </label>
-                            <label class="bg-slate-50 px-3 py-2 cursor-pointer border-r border-slate-300 hover:bg-slate-100 flex items-center">
-                                <input type="radio" name="clickAction" value="download" class="mr-2"> Download
-                            </label>
-                        </div>
-                    </div>
-                    <div class="flex gap-4 ml-auto text-xs font-semibold uppercase text-slate-600">
-                        <div class="flex items-center gap-2"><div class="w-3 h-3 bg-slate-300"></div> Pending</div>
-                        <div class="flex items-center gap-2"><div class="w-3 h-3 bg-yellow-500"></div> Scanning</div>
-                        <div class="flex items-center gap-2"><div class="w-3 h-3 bg-green-500"></div> Available</div>
-                        <div class="flex items-center gap-2"><div class="w-3 h-3 bg-red-500"></div> Missing</div>
-                    </div>
+    <!-- LEFT PANE: SIDEBAR -->
+    <div id="sidebar">
+        <div class="p-5 border-b border-slate-200 bg-white shadow-sm z-10">
+            <h1 class="text-xl font-bold text-slate-800 mb-4">DMW Dashboard</h1>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Satellite</label>
+                    <select id="satelliteSelect" class="w-full border border-slate-300 rounded p-2 bg-slate-50 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all cursor-pointer">
+                        <option value="noaa-goes19">GOES-19 (East)</option>
+                        <option value="noaa-goes18">GOES-18 (West)</option>
+                    </select>
                 </div>
-            </header>
-
-            <div class="overflow-x-auto overflow-y-visible border border-slate-300 rounded">
-                <div class="status-grid" id="mainGrid">
-                    <div class="header-row">
-                        <div class="header-cell">Product / Region</div>
-                        <script>
-                            for(let i=0; i<24; i++) {
-                                document.write(`<div class="header-cell">${String(i).padStart(2, '0')}z</div>`);
-                            }
-                        </script>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Target Date (UTC)</label>
+                    <input type="date" id="dateInput" class="w-full border border-slate-300 rounded p-2 bg-slate-50 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer transition-all shadow-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Click Action</label>
+                    <div class="flex border border-slate-300 rounded overflow-hidden text-xs w-full shadow-sm">
+                        <label class="flex-1 text-center bg-slate-50 py-2 cursor-pointer border-r border-slate-300 hover:bg-slate-100 flex items-center justify-center font-medium transition-colors">
+                            <input type="radio" name="clickAction" value="load" checked class="mr-1.5"> Load
+                        </label>
+                        <label class="flex-1 text-center bg-slate-50 py-2 cursor-pointer hover:bg-slate-100 flex items-center justify-center font-medium transition-colors">
+                            <input type="radio" name="clickAction" value="download" class="mr-1.5"> Download
+                        </label>
                     </div>
                 </div>
             </div>
         </div>
+        
+        <!-- ACCORDION / DOMAIN LIST -->
+        <div id="domain-container" class="flex-1 overflow-y-auto p-4 space-y-5 bg-slate-50">
+            <!-- Dynamically populated via JS -->
+        </div>
     </div>
 
-    <div id="drag-divider"></div>
     <div id="copyToast" class="toast">Action completed!</div>
     <div id="root"></div>
 
     <!-- --- Vanilla JS (Dashboard Logic) --- -->
     <script>
-        const PRODUCT_DEFS = [
+        const PRODUCTS = [
             { code: "ABI-L2-DMW", channel: "C02", name: "DMW Band 2 (Visible)" },
             { code: "ABI-L2-DMW", channel: "C07", name: "DMW Band 7 (Shortwave IR)" },
             { code: "ABI-L2-DMW", channel: "C08", name: "DMW Band 8 (Upper WV)" },
@@ -173,157 +130,135 @@
         ];
 
         const DOMAINS = [
-            { id: "F", name: "Full Disk", slots: 1 },
-            { id: "C", name: "CONUS", slots: 4 },
-            { id: "M1", name: "Meso 1", slots: 12 },
-            { id: "M2", name: "Meso 2", slots: 12 }
+            { id: "F", name: "Full Disk" },
+            { id: "C", name: "CONUS" },
+            { id: "M1", name: "Meso 1" },
+            { id: "M2", name: "Meso 2" }
         ];
 
-        const grid = document.getElementById('mainGrid');
+        const container = document.getElementById('domain-container');
         const dateInput = document.getElementById('dateInput');
-        const satelliteSelect = document.getElementById('satelliteSelect');
         const copyToast = document.getElementById('copyToast');
 
         dateInput.value = new Date().toISOString().split('T')[0];
 
         dateInput.onchange = () => {
-            const boxes = document.querySelectorAll('.status-box');
-            boxes.forEach(box => {
-                box.className = 'status-box';
-                box.title = "Not scanned";
-                box.onclick = null;
-                box.innerHTML = '';
+            PRODUCTS.forEach(p => {
+                DOMAINS.forEach(d => {
+                    const el = document.getElementById(`results-${d.id}-${p.channel}-${p.code}`);
+                    if(el) el.innerHTML = '<span class="text-slate-400 italic">Not scanned</span>';
+                });
             });
         };
 
-        function createGrid() {
-            PRODUCT_DEFS.forEach((product, pIdx) => {
-                DOMAINS.forEach(domain => {
-                    const rowId = `row-${pIdx}-${domain.id}`;
-                    const domainLabel = domain.id.startsWith('M') ? 'M' : domain.id;
-                    
-                    const rowContainer = document.createElement('div');
-                    rowContainer.className = 'product-row';
-                    rowContainer.id = rowId;
-                    rowContainer.dataset.product = product.code;
-                    rowContainer.dataset.channel = product.channel;
-                    rowContainer.dataset.domain = domain.id;
-
-                    const labelDiv = document.createElement('div');
-                    labelDiv.className = 'product-label';
-                    labelDiv.innerHTML = `
-                        <div class="flex flex-col">
-                            <span class="text-slate-900">${product.code}${domainLabel} (${product.channel})</span>
-                            <span class="text-[9px] text-slate-500">${product.name} | ${domain.name}</span>
+        function createSidebar() {
+            DOMAINS.forEach(dom => {
+                let html = `<div class="bg-white border border-slate-200 rounded shadow-sm overflow-hidden">
+                    <div class="bg-slate-100 p-3 flex justify-between items-center border-b border-slate-200">
+                        <span class="font-bold text-slate-800 text-sm">${dom.name}</span>
+                        <button onclick="scanDomain('${dom.id}')" class="bg-blue-600 hover:bg-blue-700 text-white text-[10px] uppercase font-bold px-3 py-1.5 rounded transition-colors shadow-sm focus:ring-2 focus:ring-blue-300 outline-none">Scan Domain</button>
+                    </div>
+                    <div class="p-3 space-y-4">`;
+                
+                PRODUCTS.forEach(prod => {
+                    html += `<div>
+                        <div class="text-xs font-semibold text-slate-600 mb-1.5 flex justify-between">
+                            <span>${prod.name}</span>
                         </div>
-                        <button onclick="scanRow('${rowId}')" class="bg-slate-200 hover:bg-slate-300 px-2 py-1 rounded text-[10px] uppercase font-bold transition text-slate-700 border border-slate-300">Scan</button>
-                    `;
-                    rowContainer.appendChild(labelDiv);
-
-                    for(let h=0; h<24; h++) {
-                        const cell = document.createElement('div');
-                        cell.className = 'status-cell';
-                        cell.id = `cell-${rowId}-${h}`;
-                        
-                        for(let s=0; s<domain.slots; s++) {
-                            const box = document.createElement('div');
-                            box.className = 'status-box';
-                            box.title = "Not scanned";
-                            cell.appendChild(box);
-                        }
-                        rowContainer.appendChild(cell);
-                    }
-                    grid.appendChild(rowContainer);
+                        <div id="results-${dom.id}-${prod.channel}-${prod.code}" class="flex flex-wrap gap-1.5 text-[10px]">
+                            <span class="text-slate-400 italic">Not scanned</span>
+                        </div>
+                    </div>`;
                 });
+
+                html += `</div></div>`;
+                container.innerHTML += html;
             });
         }
 
-        async function scanRow(rowId) {
-            const rowEl = document.getElementById(rowId);
-            const productBase = rowEl.dataset.product;
-            const domainId = rowEl.dataset.domain;
-            const channel = rowEl.dataset.channel;
-            
-            const bucket = satelliteSelect.value;
-            const dateStr = dateInput.value;
+        async function scanDomain(domainId) {
+            const bucket = document.getElementById('satelliteSelect').value;
+            const dateStr = document.getElementById('dateInput').value;
             const dateObj = new Date(dateStr);
             const year = dateObj.getUTCFullYear();
             const start = new Date(Date.UTC(year, 0, 1));
             const doy = Math.floor((dateObj - start) / (1000 * 60 * 60 * 24)) + 1;
             const doyPadded = String(doy).padStart(3, '0');
 
-            let productPathPrefix = productBase;
-            if (domainId.startsWith('M')) productPathPrefix += 'M';
-            else productPathPrefix += domainId;
-
-            const rowCells = document.querySelectorAll(`[id^="cell-${rowId}-"]`);
-            rowCells.forEach(cell => Array.from(cell.children).forEach(box => box.className = 'status-box scanning'));
-
-            for(let h=0; h<24; h++) {
-                let fullPrefix = "";
-                try {
-                    const hourPadded = String(h).padStart(2, '0');
-                    fullPrefix = `${productPathPrefix}/${year}/${doyPadded}/${hourPadded}/`;
-                    const url = `https://${bucket}.s3.amazonaws.com/?list-type=2&prefix=${fullPrefix}`;
-                    console.log(`Searching prefix: ${fullPrefix} | URL: ${url}`);
-                    
-                    const response = await fetch(url);
-                    console.log(`Fetch status for ${fullPrefix}: ${response.status} ${response.statusText}`);
-                    if(!response.ok) throw new Error(`Fetch failed`);
-                    
-                    const responseText = await response.text();
-                    const xmlDoc = new DOMParser().parseFromString(responseText, "application/xml");
-                    const foundKeys = Array.from(xmlDoc.getElementsByTagName('Key')).map(n => n.textContent);
-                    
-                    updateCellStatus(rowId, h, foundKeys, domainId, bucket, channel);
-                } catch (e) {
-                    console.error(`Fetch error for ${fullPrefix}: `, e);
-                    updateCellStatus(rowId, h, [], domainId, bucket, channel, true);
-                }
-            }
-        }
-
-        function updateCellStatus(rowId, hour, keys, domainId, bucket, channel, isError = false) {
-            const cell = document.getElementById(`cell-${rowId}-${hour}`);
-            if (!cell) return;
-            
-            const boxes = Array.from(cell.children);
-            const productBase = document.getElementById(rowId).dataset.product;
-
-            boxes.forEach(b => {
-                b.className = 'status-box missing';
-                b.title = "File not found";
-                b.onclick = null;
-                b.innerHTML = '';
+            PRODUCTS.forEach(p => {
+                const el = document.getElementById(`results-${domainId}-${p.channel}-${p.code}`);
+                if(el) el.innerHTML = '<span class="text-slate-400 font-medium text-blue-500 animate-pulse">Scanning S3...</span>';
             });
 
-            if (isError) return;
+            const keysFound = [];
+            const prefixes = [`ABI-L2-DMW${domainId}`, `ABI-L2-DMWV${domainId}`];
+            
+            // Fetch all hours in parallel to drastically speed up scan
+            const fetchPromises = [];
+            for (let h=0; h<24; h++) {
+                const hourPadded = String(h).padStart(2, '0');
+                for (const p of prefixes) {
+                    const fullPrefix = `${p}/${year}/${doyPadded}/${hourPadded}/`;
+                    const url = `https://${bucket}.s3.amazonaws.com/?list-type=2&prefix=${fullPrefix}`;
+                    fetchPromises.push(
+                        fetch(url).then(async response => {
+                            if (response.ok) {
+                                const text = await response.text();
+                                const xml = new DOMParser().parseFromString(text, "application/xml");
+                                const keys = Array.from(xml.getElementsByTagName('Key')).map(n => n.textContent);
+                                keysFound.push(...keys);
+                            }
+                        }).catch(e => console.error("Error fetching " + url, e))
+                    );
+                }
+            }
+            
+            await Promise.all(fetchPromises);
 
-            keys.forEach(key => {
+            PRODUCTS.forEach(p => {
+                const el = document.getElementById(`results-${domainId}-${p.channel}-${p.code}`);
+                if(el) el.innerHTML = '';
+            });
+
+            // Sort keys chronologically
+            keysFound.sort();
+
+            keysFound.forEach(key => {
                 const filename = key.split('/').pop();
                 
-                // Domain match
-                if (domainId.startsWith('M') && !filename.includes(productBase + domainId + '-')) return;
-                // Channel match
-                if (!filename.includes(`_${channel}_`) && !filename.includes(`-${channel}_`) && !filename.includes(`${channel}_`)) return;
+                let pCode = "ABI-L2-DMW";
+                if (filename.includes("DMWV")) pCode = "ABI-L2-DMWV";
+                
+                let pChan = null;
+                if (filename.includes("C02_") || filename.includes("-C02_") || filename.includes("C02_")) pChan = "C02";
+                else if (filename.includes("C07_") || filename.includes("-C07_") || filename.includes("C07_")) pChan = "C07";
+                else if (filename.includes("C08_") || filename.includes("-C08_") || filename.includes("C08_")) pChan = "C08";
+                else if (filename.includes("C09_") || filename.includes("-C09_") || filename.includes("C09_")) pChan = "C09";
+                else if (filename.includes("C10_") || filename.includes("-C10_") || filename.includes("C10_")) pChan = "C10";
+                else if (filename.includes("C14_") || filename.includes("-C14_") || filename.includes("C14_")) pChan = "C14";
+                
+                if (!pChan) return;
+
+                const containerId = `results-${domainId}-${pChan}-${pCode}`;
+                const targetContainer = document.getElementById(containerId);
+                if (!targetContainer) return;
 
                 const timeMatch = filename.match(/_s(\d{4})(\d{3})(\d{2})(\d{2})(\d{2})/);
-                if (timeMatch) {
-                    const min = parseInt(timeMatch[4]);
-                    let slotIdx = 0;
-                    if (domainId === 'C') slotIdx = Math.floor(min / 15);
-                    else if (domainId.startsWith('M')) slotIdx = Math.floor(min / 5);
+                let timeStr = "Unk";
+                if (timeMatch) timeStr = `${timeMatch[3]}:${timeMatch[4]}z`;
 
-                    if (slotIdx >= 0 && slotIdx < boxes.length) {
-                        boxes[slotIdx].className = 'status-box exists';
-                        boxes[slotIdx].title = filename;
-                        boxes[slotIdx].onclick = () => handleBoxClick(key, bucket);
-                        
-                        const tt = document.createElement('div');
-                        tt.className = 'tooltip';
-                        tt.textContent = filename;
-                        boxes[slotIdx].appendChild(tt);
-                    }
+                const btn = document.createElement('button');
+                btn.className = "bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 border border-blue-200 px-2 py-0.5 rounded-sm text-[10px] font-medium cursor-pointer transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400";
+                btn.textContent = timeStr;
+                btn.title = filename;
+                btn.onclick = () => handleBoxClick(key, bucket);
+                targetContainer.appendChild(btn);
+            });
+
+            PRODUCTS.forEach(p => {
+                const el = document.getElementById(`results-${domainId}-${p.channel}-${p.code}`);
+                if(el && el.innerHTML === '') {
+                    el.innerHTML = '<span class="text-slate-400 italic">No files available</span>';
                 }
             });
         }
@@ -352,35 +287,7 @@
             setTimeout(() => copyToast.style.display = 'none', 2000);
         }
 
-        // Drag Divider Logic
-        const divider = document.getElementById('drag-divider');
-        const topPane = document.getElementById('dashboard-pane');
-        let isDragging = false;
-
-        divider.addEventListener('mousedown', () => {
-            isDragging = true;
-            divider.classList.add('dragging');
-            document.body.style.cursor = 'row-resize';
-            document.body.style.userSelect = 'none';
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-            let newHeight = (e.clientY / document.body.clientHeight) * 100;
-            topPane.style.height = `${Math.max(10, Math.min(newHeight, 90))}%`;
-        });
-
-        document.addEventListener('mouseup', () => {
-            if (isDragging) {
-                isDragging = false;
-                divider.classList.remove('dragging');
-                document.body.style.cursor = '';
-                document.body.style.userSelect = '';
-                window.dispatchEvent(new Event('resize')); 
-            }
-        });
-
-        window.onload = createGrid;
+        window.onload = createSidebar;
     </script>
 
     <!-- --- React Sandbox Application --- -->
